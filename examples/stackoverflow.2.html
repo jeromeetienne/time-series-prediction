@@ -1,0 +1,142 @@
+<!-- Load TensorFlow.js -->
+<script src='https://unpkg.com/@tensorflow/tfjs'></script>
+<script>
+	// from https://stackoverflow.com/questions/50728673/tensorflow-js-lstm-time-series-prediction
+	async function predictfuture() {
+		let timeWindowWidth = 15
+
+		let timeSerie = []
+		for(let i = 0; i < 200; i++){
+			// let angle = i * Math.PI*2 / 10
+			// let value = Math.cos(angle)
+			let value = i
+			timeSerie.push(value)
+		}
+
+		var xsValues = []
+		var ysValues = []
+		for(let timeIndex = 0; timeIndex < timeSerie.length-timeWindowWidth*2; timeIndex++){
+			// build input
+			var input = []
+			for(let windowOffset = 0; windowOffset < timeWindowWidth; windowOffset++){
+				let value = timeSerie[timeIndex + windowOffset]
+				input.push([value])
+			}
+			// add input to xsValue
+			xsValues.push(input)
+
+			// build label
+			var label = []
+			for(let windowOffset = 0; windowOffset < timeWindowWidth; windowOffset++){
+				let value = timeSerie[timeIndex + windowOffset + 1]
+				label.push([value])
+			}
+			// add label to yxValues
+			ysValues.push(label)
+
+		}
+// debugger
+		////////////////////////
+		// create fake data
+		///////////////////////
+
+		// var xs = tf.tensor3d([
+		// 	[[1], [2], [3]],
+		// 	[[2], [3], [4]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]]
+		// ]);
+		// xs.print();
+
+		// var ys = tf.tensor3d([
+		// [[2], [3], [4]],
+		// [[3], [4], [5]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]],
+		// 	// [[1], [1], [0]]
+		// ]);
+		// ys.print();
+
+		// create the tensors for xsValues, ysValues
+		var xs = tf.tensor3d(xsValues)
+		var ys = tf.tensor3d(ysValues)
+
+		// display tensors
+		xs.print();
+		ys.print();
+
+		////////////////////////
+		// create model w/ layers api
+		///////////////////////
+
+		const model = tf.sequential();
+
+		//hidden layer
+		model.add( tf.layers.lstm({
+			units: 30,
+			activation: 'relu',
+			inputShape: [timeWindowWidth, 1],
+			returnSequences: true
+		}));
+		// model.add(tf.layers.lstm({
+		// 	units: 30,
+		// 	activation: 'relu',
+		// 	returnSequences: true
+		// }));
+		//output layer
+		model.add(tf.layers.dense({
+			activation: 'relu',
+			units: 10,
+		}));
+		model.add(tf.layers.dense({
+			activation: 'relu',
+			units: 10,
+		}));
+		model.add(tf.layers.dense({
+			activation: 'relu',
+			units: 1,
+		}));
+
+		//compile
+		// const optimizer = tf.train.sgd(0.1)
+		const optimizer = tf.train.adam(0.01);
+		model.compile({
+			optimizer: optimizer,
+			loss: tf.losses.meanSquaredError
+		});
+
+		////////////////////////
+		// train & predict
+		///////////////////////
+
+		console.log('Training Model...');
+
+		await model.fit(xs, ys, {
+			batchSize: 16,
+			epochs: 50,
+			callbacks: {
+				onEpochEnd: (epoch, log) => {
+					console.log(epoch, log);
+				}
+			}
+		}).then(() => {
+
+			console.log('Training Complete!');
+			console.log('Creating Prediction...');
+
+			// const inputs = tf.tensor2d([[1], [1], [0]]);
+			const inputs = tf.tensor3d([[[15], [16], [17], [18], [19]]]);
+			let outputs = model.predict(inputs);
+			outputs.print();
+
+		});
+
+	}
+
+	predictfuture();
+
+</script>

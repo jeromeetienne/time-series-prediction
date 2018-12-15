@@ -1,0 +1,72 @@
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+<script>
+	; (async function () {
+		let csvURL = './data/AAPL-dec072017-dec072018.csv'
+		// let csvURL = './data/GOOG-nov072018-dec072018.csv'
+		let response = await fetch(csvURL)
+		let csvText = await response.text()
+		let csvData = parseCSV(csvText)
+
+		displayHistoricalData(csvData)
+
+	})()
+
+
+	/**
+	* Display historical data from csvData
+	*/
+	function displayHistoricalData(csvData){
+		const surface = tfvis.visor().surface({
+			name: 'Stock Historical Data',
+			tab: 'CSV Data'
+		})
+
+		// convert value before displaying them
+		let valuesClose = csvData.map((csvRecord, recordIndex) => {
+			return {
+				x: recordIndex,
+				y: parseFloat(csvRecord.Close),
+			}
+		})
+		let valuesOpen = csvData.map((csvRecord, recordIndex) => {
+			return {
+				x: recordIndex,
+				y: parseFloat(csvRecord.Open),
+			}
+		})
+
+		// render value with tfvis
+		tfvis.render.linechart({
+			values: [valuesClose, valuesOpen],
+			series: ['Close Prize', 'Open Prize']
+		}, surface, {
+			zoomToFit : true,
+			xLabel: 'Days',
+			yLabel: 'Price',
+
+		})
+	}
+
+	/**
+	* parse a CSV data
+	*/
+	function parseCSV(allText) {
+		var allTextLines = allText.split(/\r\n|\n/);
+		var headers = allTextLines[0].split(',');
+		var lines = [];
+
+		for (var i = 1; i < allTextLines.length; i++) {
+			var data = allTextLines[i].split(',');
+			if (data.length == headers.length) {
+
+				var tarr = {};
+				for (var j = 0; j < headers.length; j++) {
+					tarr[headers[j]] = data[j]
+				}
+				lines.push(tarr);
+			}
+		}
+		return lines
+	}
+</script>
