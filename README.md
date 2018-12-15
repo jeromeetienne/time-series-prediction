@@ -1,5 +1,12 @@
 # Experimenting about Time Series Predictions
 
+
+---
+
+# Notes
+
+- TODO experiment with fft prediction
+  - https://www.youtube.com/watch?v=VYpAodcdFfA&fbclid=IwAR3jvud7-1zIPZGNqgIp79cLFJ5S2ZNaVx7BmvqntTn3n-RycDB3fvsVGTM
 - tensorflow python version of a bitcoin trader - https://github.com/lefnire/tforce_btc_trader
   - excelent intro to the field... with even teaching on trading!!!
   - podcast associated to it - http://ocdevel.com/mlg/26
